@@ -15,13 +15,13 @@ public class javaVMStackSOF {
 		stackAdd();
 	}
 
-	public static void main( String[] args ) {
+	public static void main( String[] args ) throws Throwable{
 		// TODO Auto-generated method stub
 		javaVMStackSOF oom = new javaVMStackSOF();
 		try{
 			oom.stackAdd();
 		}
-		catch(Exception e){
+		catch(Throwable e){
 			System.out.println("长度:" + oom.stackLength);
 			e.printStackTrace();
 		}
