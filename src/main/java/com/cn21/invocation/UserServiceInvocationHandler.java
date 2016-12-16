@@ -15,6 +15,7 @@ public class UserServiceInvocationHandler implements InvocationHandler{
 	@Override
     public Object invoke( Object object, Method method, Object[] arg2 ) throws Throwable {
 	    // TODO Auto-generated method stub
+		//调用原来的方法
 	    return method.invoke( this.object, arg2 );
     }
 
