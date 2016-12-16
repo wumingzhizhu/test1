@@ -9,4 +9,5 @@
 7、被动引用的例子.<br>
 8、不同类加载器的例子。<br>
 9、try-with-resource语句的例子--TryWithResource类.<br>
-10、利用反射获取构造方法的例子--ReflectTest类
+10、利用反射获取构造方法的例子--ReflectTest类.<br>
+11、动态代理的例子，以及网上动态代理的例子--com.cn21.invocation包。
