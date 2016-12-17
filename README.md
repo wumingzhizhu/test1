@@ -11,4 +11,6 @@
 9、try-with-resource语句的例子--TryWithResource类.<br>
 10、利用反射获取构造方法的例子--ReflectTest类.<br>
 11、动态代理的例子，以及网上动态代理的例子--com.cn21.invocation包。<br>
-12、实现可以接受任意接口及其实现类的动态代理--com.cn21.invocation包.
+12、实现可以接受任意接口及其实现类的动态代理--com.cn21.invocation包.<br>
+13、实现接口之间的转换，即调用第一个接口会自动转换为第二个接口的方法。--com.cn21.invocation包.<br>
+14、java核心技术第二章源码--com.java7book.chapter2.dynamicproxy

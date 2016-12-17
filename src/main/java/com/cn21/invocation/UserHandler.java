@@ -12,7 +12,8 @@ public class UserHandler {
 		try {
 			//getMessage();
 			//useProxy();
-			TestCommonProxy();
+			//TestCommonProxy();
+			changeToSecond();
 		}
 		catch( Exception e ) {
 			// TODO: handle exception
@@ -63,6 +64,18 @@ public class UserHandler {
 		MatherService matherService = new MatherServiceImpl();
 		commonProxy( matherService ).getAddress();
 		commonProxy( matherService ).getCharacter();
+	}
+	
+	/**
+	 * 如果调用greetFrist的方法，会自动变成greetSecond方法
+	 */
+	public static void changeToSecond(){
+		GreetSecond greetSecond = new GreetSecondImpl();
+		GreetHandler handler = new GreetHandler( greetSecond );
+		ClassLoader cl = greetSecond.getClass().getClassLoader();
+		GreetFirst second = (GreetFirst)Proxy.newProxyInstance( cl, new Class<?>[]{GreetFirst.class}, handler );
+		String name = second.getMessage( "李连杰","12345" );
+		System.out.println(name);
 	}
 
 }
