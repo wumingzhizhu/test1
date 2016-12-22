@@ -11,8 +11,9 @@ public class TestInvoke {
 		try {
 			// invokeExactTest();
 			TestInvoke testInvoke = new TestInvoke();
-			//testInvoke.TestAsVarargsCollector();
-			testInvoke.TestBindTo();
+			// testInvoke.TestAsVarargsCollector();
+			// testInvoke.TestBindTo();
+			testInvoke.TestOtherMethod();
 		}
 		catch( Throwable e ) {
 			// TODO: handle exception
@@ -60,8 +61,7 @@ public class TestInvoke {
 	}
 
 	/**
-	 * @throws Throwable
-	 * 绑定参数和不绑定参数的调用
+	 * @throws Throwable 绑定参数和不绑定参数的调用
 	 */
 	public void TestBindTo() throws Throwable {
 		MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -73,4 +73,39 @@ public class TestInvoke {
 		System.out.println( "绑定参数的调用: " + methodHandle.invoke() );
 	}
 
+	public void TestOtherMethod() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		// 调用构造方法
+		String str = "baby";
+		byte[] bt = str.getBytes();
+		lookup.findConstructor( Mother.class, MethodType.methodType( void.class, byte[].class ) ).invoke( bt );
+		// 调用静态方法
+		lookup.findStatic( Mother.class, "getName", MethodType.methodType( void.class, Object[].class ) ).invoke( "hello", "world" );
+		// 调用私有方法
+		lookup.findSpecial( TestInvoke.class, "getAge", MethodType.methodType( void.class ), TestInvoke.class ).invoke(this);
+
+	}
+	
+	//私有方法
+	private void getAge() {
+		System.out.println( "my age is 10" );
+	}
+
+}
+
+class Mother {
+
+	public Mother(byte[] name) {
+		System.out.println( new String( name ) );
+	}
+
+	public static void getName( Object... object ) {
+		for( Object object2 : object ) {
+			System.out.println( object2 );
+		}
+	}
+
+	private void getAge() {
+		System.out.println( "my age is 10" );
+	}
 }
