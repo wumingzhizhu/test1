@@ -13,7 +13,13 @@ public class TestInvoke {
 			TestInvoke testInvoke = new TestInvoke();
 			// testInvoke.TestAsVarargsCollector();
 			// testInvoke.TestBindTo();
-			testInvoke.TestOtherMethod();
+			// testInvoke.TestOtherMethod();
+			// testInvoke.dropArguments();
+			// testInvoke.insertArguments();
+			// testInvoke.filterArguments();
+			//testInvoke.foldArguments();
+			//testInvoke.permuteArguments();
+			testInvoke.guardWithTest();
 		}
 		catch( Throwable e ) {
 			// TODO: handle exception
@@ -82,13 +88,100 @@ public class TestInvoke {
 		// 调用静态方法
 		lookup.findStatic( Mother.class, "getName", MethodType.methodType( void.class, Object[].class ) ).invoke( "hello", "world" );
 		// 调用私有方法
-		lookup.findSpecial( TestInvoke.class, "getAge", MethodType.methodType( void.class ), TestInvoke.class ).invoke(this);
+		lookup.findSpecial( TestInvoke.class, "getAge", MethodType.methodType( void.class ), TestInvoke.class ).invoke( this );
 
 	}
+
+	/**
+	 * @throws Throwable 方法句柄的转换，该方法会添加一些额外的没用的参数。
+	 */
+	public void dropArguments() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodType type = MethodType.methodType( String.class, int.class, int.class );
+		MethodHandle oldHandle = lookup.findVirtual( String.class, "substring", type );
+		System.out.println( oldHandle.invoke( "hello", 0, 2 ) );
+		// dropArguments方法可以加入一些无用的参数
+		MethodHandle newHandle = MethodHandles.dropArguments( oldHandle, 0, String.class, float.class );
+		System.out.println( newHandle.invoke( "message", 0.5f, "hello", 0, 2 ) );
+	}
+
+	/**
+	 * @throws Throwable 对方法句柄绑定具体的值
+	 */
+	public void insertArguments() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodType type = MethodType.methodType( String.class, String.class );
+		MethodHandle oldHandle = lookup.findVirtual( String.class, "concat", type );
+		System.out.println( oldHandle.invoke( "hello", "word" ) );
+		// 指定参数是“--”
+		MethodHandle newHandle = MethodHandles.insertArguments( oldHandle, 1, "--" );
+		System.out.println( newHandle.invoke( "hello" ) ); // 输出 "hello--"
+
+	}
+
+	/**
+	 * @throws Throwable 对方法句柄的参数进行预处理，再传入真正的句柄
+	 */
+	public void filterArguments() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodType type = MethodType.methodType( int.class, int.class, int.class );
+		// 预处理的句柄
+		MethodHandle mGetLengthHandle = lookup.findVirtual( String.class, "length", MethodType.methodType( int.class ) );
+		MethodHandle tarHandle = lookup.findStatic( Math.class, "max", type );
+		MethodHandle newHandle = MethodHandles.filterArguments( tarHandle, 0, mGetLengthHandle, mGetLengthHandle );
+		// 入参会先经过预处理的句柄，再到达真正的句柄
+		System.out.println( newHandle.invoke( "hello", "world is me" ) );
+	}
+
+	public void foldArguments() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodHandle combiner = lookup.findStatic( Math.class, "max", MethodType.methodType( int.class, int.class, int.class ) );
+		MethodHandle target = lookup.findStatic( TestInvoke.class, "getFirst",
+		    MethodType.methodType( int.class, int.class, int.class, int.class ) );
+		MethodHandle mResultHandle = MethodHandles.foldArguments( target, combiner );
+		// 传参3,4,先经过combiner的MAX方法，得到4，作为新的参数，传到targer句柄，参数列表为4,3,4,getFirst方法返回第一个参数，所以为4
+		System.out.println( mResultHandle.invoke( 3, 4 ) );
+
+	}
+
+	public void permuteArguments() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodType type = MethodType.methodType( int.class, int.class, int.class );
+		MethodHandle mCompareHandle = lookup.findStatic( Integer.class, "compare", type );
+		System.out.println( mCompareHandle.invoke( 3, 4 ) );
+		//调用permuteArguments可以对打乱参数的顺序，例如下面可以颠倒参数,参数1代表原来参数列表的第二个参数，0代表原来参数列表的第一个参数
+		MethodHandle mNew = MethodHandles.permuteArguments( mCompareHandle, type, 1, 0 );
+		System.out.println( mNew.invoke( 3, 4 ) );
+	}
 	
-	//私有方法
+	/**
+	 * @throws Throwable
+	 * 用来进行判断的方法句柄，一共需要3个句柄，一个用来判断，另外两个是为真和假需要用的
+	 */
+	public void guardWithTest() throws Throwable{
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodHandle judgethHandle = lookup.findStatic( TestInvoke.class, "judgeTest", 
+			MethodType.methodType( boolean.class ) );
+		MethodHandle trueHandle = lookup.findStatic( Math.class, "max", 
+			MethodType.methodType( int.class,int.class,int.class ) );
+		MethodHandle falseHandle = lookup.findStatic( Math.class, "min", 
+			MethodType.methodType( int.class,int.class,int.class ) );
+		MethodHandle mHandle = MethodHandles.guardWithTest( judgethHandle, trueHandle, falseHandle );
+		System.out.println(mHandle.invoke( 3,5 ));
+		
+	}
+	
+	public static boolean judgeTest(){
+		return Math.random() > 0.5;
+	}
+
+	// 私有方法
 	private void getAge() {
 		System.out.println( "my age is 10" );
+	}
+
+	public static int getFirst( int arg0, int arg1, int arg2 ) {
+		return arg0;
 	}
 
 }
