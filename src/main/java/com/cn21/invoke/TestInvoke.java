@@ -17,9 +17,10 @@ public class TestInvoke {
 			// testInvoke.dropArguments();
 			// testInvoke.insertArguments();
 			// testInvoke.filterArguments();
-			//testInvoke.foldArguments();
-			//testInvoke.permuteArguments();
-			testInvoke.guardWithTest();
+			// testInvoke.foldArguments();
+			// testInvoke.permuteArguments();
+			//testInvoke.guardWithTest();
+			testInvoke.invokerTransFrom();
 		}
 		catch( Throwable e ) {
 			// TODO: handle exception
@@ -149,29 +150,40 @@ public class TestInvoke {
 		MethodType type = MethodType.methodType( int.class, int.class, int.class );
 		MethodHandle mCompareHandle = lookup.findStatic( Integer.class, "compare", type );
 		System.out.println( mCompareHandle.invoke( 3, 4 ) );
-		//调用permuteArguments可以对打乱参数的顺序，例如下面可以颠倒参数,参数1代表原来参数列表的第二个参数，0代表原来参数列表的第一个参数
+		// 调用permuteArguments可以对打乱参数的顺序，例如下面可以颠倒参数,参数1代表原来参数列表的第二个参数，0代表原来参数列表的第一个参数
 		MethodHandle mNew = MethodHandles.permuteArguments( mCompareHandle, type, 1, 0 );
 		System.out.println( mNew.invoke( 3, 4 ) );
 	}
-	
+
+	/**
+	 * @throws Throwable 用来进行判断的方法句柄，一共需要3个句柄，一个用来判断，另外两个是为真和假需要用的
+	 */
+	public void guardWithTest() throws Throwable {
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
+		MethodHandle judgethHandle = lookup.findStatic( TestInvoke.class, "judgeTest", MethodType.methodType( boolean.class ) );
+		MethodHandle trueHandle = lookup.findStatic( Math.class, "max", MethodType.methodType( int.class, int.class, int.class ) );
+		MethodHandle falseHandle = lookup.findStatic( Math.class, "min", MethodType.methodType( int.class, int.class, int.class ) );
+		MethodHandle mHandle = MethodHandles.guardWithTest( judgethHandle, trueHandle, falseHandle );
+		System.out.println( mHandle.invoke( 3, 5 ) );
+
+	}
+
 	/**
 	 * @throws Throwable
-	 * 用来进行判断的方法句柄，一共需要3个句柄，一个用来判断，另外两个是为真和假需要用的
+	 * 元方法句柄，通过invoker可以调用其他的方法句柄
 	 */
-	public void guardWithTest() throws Throwable{
+	public void invokerTransFrom() throws Throwable {
+		MethodType methodType = MethodType.methodType( String.class, String.class, int.class, int.class );
+		MethodHandle invoker = MethodHandles.exactInvoker( methodType );
 		MethodHandles.Lookup lookup = MethodHandles.lookup();
-		MethodHandle judgethHandle = lookup.findStatic( TestInvoke.class, "judgeTest", 
-			MethodType.methodType( boolean.class ) );
-		MethodHandle trueHandle = lookup.findStatic( Math.class, "max", 
-			MethodType.methodType( int.class,int.class,int.class ) );
-		MethodHandle falseHandle = lookup.findStatic( Math.class, "min", 
-			MethodType.methodType( int.class,int.class,int.class ) );
-		MethodHandle mHandle = MethodHandles.guardWithTest( judgethHandle, trueHandle, falseHandle );
-		System.out.println(mHandle.invoke( 3,5 ));
-		
+		MethodHandle toUpHandle = lookup.findVirtual( String.class, "toUpperCase", MethodType.methodType( String.class ) );
+		invoker = MethodHandles.filterReturnValue( invoker, toUpHandle );
+		MethodHandle mlHandle = lookup.findVirtual( String.class, "substring",
+		    MethodType.methodType( String.class, int.class, int.class ) );
+		System.out.println( invoker.invoke( mlHandle, "hello", 3, 4 ) );
 	}
-	
-	public static boolean judgeTest(){
+
+	public static boolean judgeTest() {
 		return Math.random() > 0.5;
 	}
 
