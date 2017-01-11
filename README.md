@@ -17,4 +17,6 @@
 15、方法句柄的例子--invoke包。<br>
 16、方法句柄的使用--TestInvoke.<br>
 17、excle的读取--TestExcel.java<br>
-18、java核心技术第二章源码的一些例子
+18、java核心技术第二章源码的一些例子。<br>
+19、java NIO的例子--NioTest.java<br>
+20、文件目录操作--NioTest.java
