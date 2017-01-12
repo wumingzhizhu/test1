@@ -17,6 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileOwnerAttributeView;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,9 +33,10 @@ public class NioTest {
 		// TODO Auto-generated method stub
 		try {
 			// loadWebPage( "http://www.baidu.com" );
-			//copyFile( "D://src.txt", "D://test.txt" );
-			//mapFile();
-			listFiles();
+			// copyFile( "D://src.txt", "D://test.txt" );
+			// mapFile();
+			//listFiles();
+			useNewFile();
 		}
 		catch( Exception e ) {
 			// TODO: handle exception
@@ -69,32 +75,59 @@ public class NioTest {
 
 		}
 	}
-	
+
 	/**
-	 * @throws Exception
-	 * 内存映射到文件
+	 * @throws Exception 内存映射到文件
 	 */
-	public static void mapFile() throws Exception{
-		try(FileChannel channel = FileChannel.open( Paths.get( "D://test.txt" ), 
-			StandardOpenOption.READ,StandardOpenOption.WRITE )){
+	public static void mapFile() throws Exception {
+		try (FileChannel channel = FileChannel
+		        .open( Paths.get( "D://test.txt" ), StandardOpenOption.READ, StandardOpenOption.WRITE )) {
 			MappedByteBuffer mappedByteBuffer = channel.map( FileChannel.MapMode.READ_WRITE, 0, channel.size() );
 			byte b = mappedByteBuffer.get( 5 );
-			mappedByteBuffer.put( 7,b );
+			mappedByteBuffer.put( 7, b );
 			mappedByteBuffer.force();
 		}
 	}
-	
+
 	/**
-	 * @throws Exception
-	 * 罗列文件路径
+	 * @throws Exception 罗列文件路径
 	 */
-	public static void listFiles() throws Exception{
+	public static void listFiles() throws Exception {
 		Path path = Paths.get( "D:/workspace/HelloWorld/src/main/java" );
-		try(DirectoryStream<Path> stream = Files.newDirectoryStream( path,"*.java" )){
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream( path, "*.java" )) {
 			for( Path entryPath : stream ) {
-				System.out.println(entryPath.toString());
-            }
+				System.out.println( entryPath.toString() );
+			}
 		}
+	}
+
+	/**
+	 * @throws Exception java7中新增的处理文件的类
+	 */
+	public static void useNewFile() throws Exception {
+		Path path = Paths.get( "D:/123.xlsx" );
+		//windosw dos
+		DosFileAttributeView view = Files.getFileAttributeView( path, DosFileAttributeView.class );
+		if(view != null){
+			//用readAttributes获取该接口的实现对象
+			DosFileAttributes attributes = view.readAttributes();
+			System.out.println(attributes.isReadOnly());
+			System.out.println(attributes.isDirectory());
+		}
+		//文件的基本属性
+		BasicFileAttributeView basicView = Files.getFileAttributeView( path, BasicFileAttributeView.class );
+		if(basicView != null){
+			BasicFileAttributes basicAttributes = basicView.readAttributes();
+			System.out.println(basicAttributes.lastModifiedTime());
+		}
+		//文件的所有者
+		FileOwnerAttributeView ownerView = Files.getFileAttributeView( path,FileOwnerAttributeView.class );
+		if(ownerView != null){
+			System.out.println(ownerView.getOwner());
+		}
+		
+		
+
 	}
 
 }
