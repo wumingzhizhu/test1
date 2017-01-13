@@ -1,17 +1,13 @@
 package com.cn21.nio;
 
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -27,12 +23,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.jws.WebService;
+import com.github.shyiko.mysql.binlog.io.ByteArrayOutputStream;
 
 public class NioTest {
 
@@ -44,7 +38,8 @@ public class NioTest {
 			// mapFile();
 			// listFiles();
 			// useNewFile();
-			calculate();
+			// calculate();
+			copyFile();
 		}
 		catch( Exception e ) {
 			// TODO: handle exception
@@ -155,6 +150,22 @@ public class NioTest {
 			key.reset();
 		}
 
+	}
+
+	/**
+	 * @throws Exception 文件的创建，加入内容，删除
+	 */
+	public static void copyFile() throws Exception {
+		Path newFile = Files.createFile( Paths.get( "D:/23.txt" ).toAbsolutePath() );
+		List<String> content = new ArrayList<String>();
+		content.add( "hello" );
+		content.add( "word" );
+		Files.write( newFile, content, Charset.forName( "UTF-8" ) );
+		Files.size( newFile );
+		byte[] bytes = Files.readAllBytes( newFile );
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Files.copy( newFile, out );
+		// Files.delete( newFile );
 	}
 
 }
