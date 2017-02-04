@@ -1,6 +1,10 @@
 package com.cn21.nio;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
@@ -9,10 +13,12 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -24,7 +30,12 @@ import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import com.github.shyiko.mysql.binlog.io.ByteArrayOutputStream;
 
@@ -39,7 +50,10 @@ public class NioTest {
 			// listFiles();
 			// useNewFile();
 			// calculate();
-			copyFile();
+			// copyFile();
+			// addFileToZipOld( new File( "D:/temp/123.zip" ), new File(
+			// "D:/temp/test.txt" ) );
+			addFileToZipOnJava7( new File( "D:/temp/123.zip" ), new File( "D:/temp/test.txt" ) );
 		}
 		catch( Exception e ) {
 			// TODO: handle exception
@@ -166,6 +180,61 @@ public class NioTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Files.copy( newFile, out );
 		// Files.delete( newFile );
+	}
+
+	/**
+	 * @param zipFile
+	 * @param fileToAdd
+	 * @throws Exception 把文件添加到zip文件中
+	 */
+	public static void addFileToZipOld( File zipFile, File fileToAdd ) throws Exception {
+		File tempFile = File.createTempFile( zipFile.getName(), null );
+		tempFile.delete();
+		zipFile.renameTo( tempFile );
+		System.out.println( tempFile.getName() + " " + zipFile.getName() );
+		try (ZipInputStream input = new ZipInputStream( new FileInputStream( tempFile ) );
+		        ZipOutputStream output = new ZipOutputStream( new FileOutputStream( zipFile ) )) {
+			ZipEntry entry = input.getNextEntry();
+			byte[] buf = new byte[8192];
+			while( entry != null ) {
+				String name = entry.getName();
+				if( !name.equals( fileToAdd.getName() ) ) {
+					output.putNextEntry( new ZipEntry( name ) );
+					int len = 0;
+					while( (len = input.read( buf )) > 0 ) {
+						output.write( buf, 0, len );
+					}
+					entry = input.getNextEntry();
+				}
+				try (InputStream newFileInput = new FileInputStream( fileToAdd )) {
+					output.putNextEntry( new ZipEntry( fileToAdd.getName() ) );
+					int len = 0;
+					while( (len = newFileInput.read( buf )) > 0 ) {
+						output.write( buf, 0, len );
+					}
+					output.closeEntry();
+
+				}
+			}
+			tempFile.delete();
+
+		}
+
+	}
+
+	/**
+	 * @param zipFile
+	 * @param fileToAdd
+	 * @throws Exception java7中新的文件添加到zip文件方法
+	 */
+	public static void addFileToZipOnJava7( File zipFile, File fileToAdd ) throws Exception {
+		Map<String, String> env = new HashMap<String, String>();
+		env.put( "create", "true" );
+		try (FileSystem fs = FileSystems.newFileSystem( URI.create( "Jar:" + zipFile.toURI() ), env )) {
+			Path pathToAddFile = fileToAdd.toPath();
+			Path pathinZipFile = fs.getPath( "/md" + fileToAdd.getName() );
+			Files.copy( pathToAddFile, pathinZipFile, StandardCopyOption.REPLACE_EXISTING );
+		}
 	}
 
 }
