@@ -25,3 +25,5 @@
 23、把文件添加到zip文件中--NioTest.java.<br>
 24、国际化的例子--Internation.java.<br>
 25、java ui的例子--UTTest.java.<br>
+### UITest中的更新
+1、更新了模拟下载速度。<br>

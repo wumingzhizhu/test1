@@ -2,6 +2,7 @@ package com.cn21.rain;
 
 import java.awt.AWTEvent;
 import java.awt.ActiveEvent;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -14,13 +15,20 @@ import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayer;
+import javax.swing.JProgressBar;
 import javax.swing.JSlider;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.LayerUI;
@@ -34,8 +42,10 @@ public class UITest {
 			//createTransparentWindows();
 			//HighlightLayerUI highlightLayerUI = new HighlightLayerUI();
 			//highlightLayerUI.useHightlight();
-			MyEvent myEvent = new MyEvent( "hello word" );
-			myEvent.useMyEvent( myEvent );
+			//MyEvent myEvent = new MyEvent( "hello word" );
+			//myEvent.useMyEvent( myEvent );
+			UITest test = new UITest();
+			test.downloadFile();
         }
         catch( Exception e ) {
         	e.printStackTrace();
@@ -79,6 +89,33 @@ public class UITest {
 		frame.add( jSlider );
 		frame.setOpacity( 0.8f );
 		frame.setVisible( true );
+	}
+	
+	/**
+	 * 模拟更新下载速度
+	 */
+	public void downloadFile(){
+		JFrame jFrame = new JFrame();
+		final JProgressBar progressBar = new JProgressBar();
+		jFrame.add( progressBar, BorderLayout.NORTH );
+		JLabel label = new JLabel();
+		jFrame.add( label,BorderLayout.CENTER );
+		DownloadWorker worker = new DownloadWorker(label);
+		worker.addPropertyChangeListener( new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange( PropertyChangeEvent evt ) {
+				// TODO Auto-generated method stub
+				//progress方法是在事件分发线程中调用，利用上面publish方法的中间结果来更新界面
+				if("progress".equals( evt.getPropertyName() )){
+					progressBar.setValue( (int)evt.getNewValue() );
+				}
+			}
+		} );
+		//启动任务
+		worker.execute();
+		jFrame.setSize( 400, 300 );
+		jFrame.setVisible( true );
 	}
 	
 }
@@ -144,6 +181,47 @@ class MyEvent extends AWTEvent implements ActiveEvent{
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
 		EventQueue queue = toolkit.getSystemEventQueue();
 		queue.postEvent( myEvent );
+	}
+	
+}
+
+/**
+ * @author cbx
+ * 模拟更新下载速度
+ * StringWorkder<T,V>
+ * T - 此 SwingWorker 的 doInBackground 和 get 方法返回的结果类型
+ * V - 用于保存此 SwingWorker 的 publish 和 process 方法的中间结果的类型
+ */
+class DownloadWorker extends SwingWorker<String, Double>{
+	
+	private JLabel label;
+	
+	public DownloadWorker(JLabel label) {
+	    // TODO Auto-generated constructor stub
+		this.label = label;
+    }
+
+	@Override
+    protected String doInBackground() throws Exception {
+	    // TODO Auto-generated method stub
+		Random random = new Random();
+		for(int i=0;i < 100;i ++){
+			Thread.sleep( random.nextInt( 1000 ) );
+			//更新进度，从1到100
+			setProgress( i + 1 );
+			//在工作线程调用，用来发布中间结果
+			publish( random.nextDouble() * 30 );
+		}
+		//似乎是随便返回一个字符串，没有用到
+	    //return "<Path>";
+		return "1";
+    }
+	
+	@Override
+	protected void process(List<Double> chunk){
+		//选择最后一个结果来显示
+		Double speed = chunk.get( chunk.size() - 1 );
+		label.setText( MessageFormat.format( "下载速度 :{0,number,#.##}", speed ) );
 	}
 	
 }
