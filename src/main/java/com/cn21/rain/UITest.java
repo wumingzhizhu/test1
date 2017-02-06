@@ -10,6 +10,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Label;
+import java.awt.SecondaryLoop;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
@@ -20,6 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -45,7 +47,8 @@ public class UITest {
 			//MyEvent myEvent = new MyEvent( "hello word" );
 			//myEvent.useMyEvent( myEvent );
 			UITest test = new UITest();
-			test.downloadFile();
+			//test.downloadFile();
+			//test.useLoop();
         }
         catch( Exception e ) {
         	e.printStackTrace();
@@ -116,6 +119,36 @@ public class UITest {
 		worker.execute();
 		jFrame.setSize( 400, 300 );
 		jFrame.setVisible( true );
+	}
+	
+	/**
+	 * SecondaryLoop类即可以阻塞当前线程以等待结束，又可以继续处理事件队列中的事件，并且不会造成界面失去响应
+	 */
+	public void useLoop(){
+		final JFrame frame = new JFrame();
+		frame.setSize( 300, 400 );
+		final JLabel label = new JLabel( "名字" );
+		frame.addMouseListener( new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
+				SecondaryLoop loop = queue.createSecondaryLoop();
+				WorkerThread workerThread = new WorkerThread(loop );
+				workerThread.start();
+				//可以阻塞当前事件的执行，但是界面不会失去响应
+				loop.enter();
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				label.setText( "mingiz" );
+			}
+			
+			
+		} );
+		
+		frame.add( label );
+		frame.setVisible( true );
 	}
 	
 }
@@ -225,3 +258,33 @@ class DownloadWorker extends SwingWorker<String, Double>{
 	}
 	
 }
+
+/**
+ * @author cbx
+ * SecondaryLoop类的使用
+ */
+class WorkerThread extends Thread{
+	
+	private SecondaryLoop loop;
+	
+	public WorkerThread(SecondaryLoop loop){
+		this.loop = loop;
+	}
+	
+	@Override
+	public void run(){
+		try {
+	        Thread.sleep( 5000 );
+	        System.out.println("1111111111");
+        }
+        catch( Exception e ) {
+	        // TODO: handle exception
+        	e.printStackTrace();
+        }
+		//恢复被enter阻塞的事件
+		loop.exit();
+	}
+	
+}
+
+

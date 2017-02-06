@@ -27,3 +27,4 @@
 25、java ui的例子--UTTest.java.<br>
 ### UITest中的更新
 1、更新了模拟下载速度。<br>
+2、SecondaryLoop类的使用.<br>
