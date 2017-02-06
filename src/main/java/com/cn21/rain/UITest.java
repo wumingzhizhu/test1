@@ -13,6 +13,8 @@ import java.awt.Label;
 import java.awt.SecondaryLoop;
 import java.awt.Shape;
 import java.awt.Toolkit;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
@@ -24,13 +26,16 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayer;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.LayerUI;
@@ -49,6 +54,7 @@ public class UITest {
 			UITest test = new UITest();
 			//test.downloadFile();
 			//test.useLoop();
+			test.selectPlaf();
         }
         catch( Exception e ) {
         	e.printStackTrace();
@@ -148,6 +154,39 @@ public class UITest {
 		} );
 		
 		frame.add( label );
+		frame.setVisible( true );
+	}
+	
+	/**
+	 * 切换swing界面的外观样式
+	 */
+	public void selectPlaf(){
+		final JFrame frame = new JFrame();
+		//获取java平台所有可用的样式
+		UIManager.LookAndFeelInfo info[] = UIManager.getInstalledLookAndFeels();
+		//下拉选择事件
+		JComboBox combxBox = new JComboBox(info);
+		combxBox.addItemListener( new ItemListener() {
+			@Override
+			public void itemStateChanged( ItemEvent e ) {
+				// TODO Auto-generated method stub
+				if(ItemEvent.SELECTED == e.getStateChange()){
+					UIManager.LookAndFeelInfo info = (UIManager.LookAndFeelInfo)e.getItem();
+					try{
+						UIManager.setLookAndFeel( info.getClassName() );
+						//通知界面上所有组件更新外观样式
+						SwingUtilities.updateComponentTreeUI( frame );
+					}
+					catch(Exception ex){
+						ex.printStackTrace();
+					}
+				}
+				
+			}
+		} );
+		frame.add( combxBox,BorderLayout.NORTH);
+		frame.add( new JButton("按钮"),BorderLayout.SOUTH );
+		frame.setSize( 300, 400 );
 		frame.setVisible( true );
 	}
 	
