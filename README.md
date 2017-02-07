@@ -25,7 +25,11 @@
 23、把文件添加到zip文件中--NioTest.java.<br>
 24、国际化的例子--Internation.java.<br>
 25、java ui的例子--UTTest.java.<br>
-### UITest中的更新
+### UITest类中的更新
 1、更新了模拟下载速度。<br>
 2、SecondaryLoop类的使用.<br>
 3、切换swing界面的外观样式.<br>
+### otherUpdate包中的更新
+1、数据库的新操作--JdbcTest.java.<br>
+### pom.xml
+1、增加了mysql的驱动。<br>

@@ -40,6 +40,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.LayerUI;
 
+import org.omg.CORBA.portable.ApplicationException;
+
 public class UITest {
 
 	public static void main( String[] args ) {
@@ -325,5 +327,4 @@ class WorkerThread extends Thread{
 	}
 	
 }
-
 
