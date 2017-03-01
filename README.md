@@ -33,3 +33,8 @@
 1、数据库的新操作--JdbcTest.java.<br>
 ### pom.xml
 1、增加了mysql的驱动。<br>
+### ClassLoadTest包的更新
+1、用来测试的类--ClassForNameTest.java.<br>
+#### ClassLoadTest类
+1、增加了测试ClassForName和ClassLoad的方法。<br>
+
